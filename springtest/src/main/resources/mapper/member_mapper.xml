@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yedam.app.member.mapper.MemberDAO"><!-- 모든 DAO의 Component를 주석으로 막고 인터페이스 DAO만 사용해서 불러오기, id는 인터페이스 메소드와 일치해야 한다. -->
+	<select id="selectAll" 
+			resultType="member"> <!-- sql-map-config-spring.xml에서 별칭을 만듬 --> 
+		SELECT  *
+		FROM member
+		ORDER BY ID
+	</select>
+	<select id="selectOne" resultType="member" parameterType="member">
+		SELECT *
+		FROM MEMBER
+		WHERE ID = #{id}
+	</select>
+	<insert id="insert" parameterType="member">
+		INSERT INTO MEMBER (ID, 
+							PW, 
+							GENDER, 
+							JOB, 
+							REASON, 
+							MAILYN, 
+							HOBBY, 
+							REGDATE)
+					VALUES (#{id},
+							#{pw},
+							#{gender},
+							#{job},
+							#{reason},
+							#{mailyn},
+							#{hobby},
+							SYSDATE)
+	</insert>
+	<update id="update" parameterType="member">
+		UPDATE MEMBER SET PW = #{pw},
+						  GENDER = #{gender}, 
+						  JOB = #{job}, 
+						  REASON = #{reason}, 
+						  MAILYN = #{mailyn}, 
+						  HOBBY = #{hobby}
+		WHERE ID = #{id}
+	</update>
+	
+	<delete id="delete" parameterType="member">
+		DELETE FROM MEMBER WHERE ID = #{id}
+	</delete>
+	
+
+</mapper>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.yedam.app.board.mapper.BoardDAO">
+	<resultMap type="board" id="boardMap">
+		<id 	property="board_no" 		column="no"/><!-- 자바에서는 대소문자 구분 하기때문에 꼭 맞추기 -->
+		<result property="poster" 			column="poster"/><!-- property는 vo의 속성, column sql의 컬럼들 -->
+		<result property="board_subject" 	column="subject"/>
+		<result property="contents" 		column="contents"/>
+		<result property="lastpost" 		column="lastpost"/>
+		<result property="views" 			column="views"/>
+		<result property="filename" 		column="filename"/>
+	</resultMap>
+	
+	<select id="selectMap" resultType="map">
+		SELECT no          as "NO",               
+			   poster      as "POSTER",
+			   subject	   as "SUBJECT",
+			   contents    as "CONTENTS",
+			   lastpost    as "LASTPOST",
+			   views       as "VIEWS",
+			   filename
+			   name,
+			   gender,
+			   role
+		FROM BOARD, USERS
+		WHERE BOARD.poster = USERS.id 
+		ORDER BY no
+	</select>
+	
+	<select id="selectCnt"	resultType="int"><!-- count하면 int값 하나만 나옴 -->
+		SELECT COUNT(*) FORM BOARD
+	</select>
+	
+	<!-- 전체조회 -->
+	<select id="selectAll" resultType="board" parameterType="board">
+	SELECT A.* FROM ( SELECT ROWNUM RN, B.* FROM (
+		SELECT no               board_no,
+			   poster,
+			   subject    		board_subject,
+			   contents,
+			   lastpost,
+			   views,
+			   filename
+		FROM board
+		<where>
+		<if test="poster != null and poster != ''">
+		 poster LIKE '%' || #{poster} || '%'
+		</if>
+		<if test="boardSubject != null and boardSubject != ''">
+		AND subject LIKE '%' || #{boardSubject} || '%'
+		</if>
+		</where>
+		ORDER BY no DESC
+	) B ) A WHERE RN BETWEEN #{first} AND #{last}
+	</select>
+	
+	<!-- 게시글 등록 -->
+	<insert id="insert">
+		<selectKey keyProperty="no" resultType="string" order="BEFORE"><!-- keyProperty=>NO , NO의 타입에 따라 resultType 바뀜  -->
+	    	SELECT NVL(MAX(NO), 0) + 1 FROM BOARD
+	  	</selectKey>
+		INSERT INTO BOARD (NO, 
+						   POSTER, 
+						   SUBJECT, 
+						   CONTENTS, 
+						   LASTPOST, 
+						   VIEWS
+					<if test="filename != null and filename != ''">
+					 	   , FILENAME
+					</if> 
+						   )
+					VALUES 	( #{no}, 
+							  #{poster},
+							  #{subject},
+							  #{contents},
+							  sysdate,
+							  #{views}
+						<if test="filename != null and filename != ''">
+					 	      , #{filename}
+						</if> 		 )
+							  
+	</insert>
+	
+	<!-- (1,2,3.....)변형시키기위해, item 은 변수, -->
+	<delete id="deleteAll" parameterType="board">
+		DELETE FROM BOARD
+		 WHERE NO IN 
+		 	<foreach collection="nos" item="i" open="(" 
+		 				close=")" separator=","> 
+		 		#{i}
+		 	</foreach>
+	</delete>
+</mapper>
